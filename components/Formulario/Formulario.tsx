@@ -16,12 +16,16 @@ const Formulario: FC<FormularioProps> = () => {
 
   return (
     <>
-      <View style={styles.formulario}>
+      <View>
         <View>
-          <TextInput placeholder="Ciudad" placeholderTextColor="#666" />
+          <TextInput
+            placeholder="Ciudad"
+            placeholderTextColor="#666"
+            style={styles.input}
+          />
         </View>
         <View>
-          <Picker onValueChange={() => setValue} selectedValue={value}>
+          <Picker itemStyle={{height: 120, backgroundColor: '#FFF'}}>
             <Picker.Item label="--Seleccione Pais" value="" />
             {formPicker.map(picker => (
               <Picker.Item
@@ -34,8 +38,8 @@ const Formulario: FC<FormularioProps> = () => {
         </View>
 
         <TouchableWithoutFeedback>
-          <View>
-            <Text>Buscar clima</Text>
+          <View style={styles.btnBuscar}>
+            <Text style={styles.textoBuscar}>Buscar clima</Text>
           </View>
         </TouchableWithoutFeedback>
       </View>
@@ -44,8 +48,25 @@ const Formulario: FC<FormularioProps> = () => {
 };
 
 const styles = StyleSheet.create({
-  formulario: {
-    marginTop: 100,
+  input: {
+    padding: 10,
+    height: 50,
+    backgroundColor: '#FFF',
+    fontSize: 20,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  btnBuscar: {
+    marginTop: 50,
+    backgroundColor: '#000',
+    padding: 10,
+    justifyContent: 'center',
+  },
+  textoBuscar: {
+    color: '#fff',
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    textAlign: 'center',
   },
 });
 export default Formulario;
