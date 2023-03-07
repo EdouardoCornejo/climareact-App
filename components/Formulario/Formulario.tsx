@@ -1,4 +1,4 @@
-import React, {FC, useState} from 'react';
+import React, {Dispatch, FC, SetStateAction, useState} from 'react';
 import {Picker} from '@react-native-community/picker';
 import {
   View,
@@ -6,27 +6,85 @@ import {
   TextInput,
   StyleSheet,
   TouchableWithoutFeedback,
+  Animated,
+  Alert,
 } from 'react-native';
 import {formPicker} from '../data/PickerValue';
 
-interface FormularioProps {}
+interface FormularioProps {
+  busqueda: {ciudad: string; pais: number | string};
+  setBusqueda: Dispatch<
+    SetStateAction<{ciudad: string; pais: number | string}>
+  >;
+  setConsultar: Dispatch<SetStateAction<boolean>>;
+}
 
-const Formulario: FC<FormularioProps> = () => {
-  const [value, setValue] = useState('');
+const Formulario: FC<FormularioProps> = ({
+  busqueda,
+  setBusqueda,
+  setConsultar,
+}) => {
+  const {pais: Pais, ciudad} = busqueda;
+  const [animacionBoton] = useState(new Animated.Value(1));
+
+  const consultarClima = () => {
+    if (Pais.toString().trim() === '' || ciudad.trim() === '') {
+      setConsultar(false);
+      mostrarAlerta();
+    } else {
+      //Consultar api
+      setConsultar(true);
+    }
+  };
+
+  const mostrarAlerta = () => {
+    Alert.alert('Error', 'Agrega una ciudad y país para la busqueda.', [
+      {text: 'Aceptar'},
+    ]);
+  };
+
+  const animacionEntrada = () => {
+    Animated.spring(animacionBoton, {
+      toValue: 0.9,
+      useNativeDriver: true,
+    }).start();
+  };
+  const animacionSalida = () => {
+    Animated.spring(animacionBoton, {
+      toValue: 1,
+      friction: 4,
+      tension: 30,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const estiloAnimacion = {
+    transform: [{scale: animacionBoton}],
+  };
 
   return (
     <>
       <View>
         <View>
           <TextInput
+            value={ciudad}
+            onChangeText={ciudad => setBusqueda({...busqueda, ciudad})}
             placeholder="Ciudad"
             placeholderTextColor="#666"
             style={styles.input}
           />
         </View>
         <View>
-          <Picker itemStyle={{height: 120, backgroundColor: '#FFF'}}>
-            <Picker.Item label="--Seleccione Pais" value="" />
+          <Picker
+            selectedValue={Pais}
+            onValueChange={(pais: number | string) =>
+              setBusqueda({
+                ...busqueda,
+                pais,
+              })
+            }
+            itemStyle={{height: 120, backgroundColor: '#FFF'}}>
+            <Picker.Item label="--Seleccione Pais--" value="" />
             {formPicker.map(picker => (
               <Picker.Item
                 key={picker.id}
@@ -37,10 +95,13 @@ const Formulario: FC<FormularioProps> = () => {
           </Picker>
         </View>
 
-        <TouchableWithoutFeedback>
-          <View style={styles.btnBuscar}>
+        <TouchableWithoutFeedback
+          onPressIn={animacionEntrada}
+          onPressOut={animacionSalida}
+          onPress={consultarClima}>
+          <Animated.View style={[styles.btnBuscar, estiloAnimacion]}>
             <Text style={styles.textoBuscar}>Buscar clima</Text>
-          </View>
+          </Animated.View>
         </TouchableWithoutFeedback>
       </View>
     </>
