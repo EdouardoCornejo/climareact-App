@@ -33,6 +33,18 @@ function App(): JSX.Element {
           const resultado = await respuesta.json();
           setResultado(resultado);
           setConsultar(false);
+
+          // modifica colores de fondo basado en la temperatura:
+          const kelvin = 273.15;
+          const actual = resultado.data?.main.temp - kelvin;
+
+          if (actual < 10) {
+            setBgColor('rgb(105,108,149)');
+          } else if (actual >= 10 && actual < 25) {
+            setBgColor('rgb(178,28,61)');
+          } else {
+            setBgColor('rgb(71,149,212)');
+          }
         } catch (error) {
           mostrarAlerta();
         }
@@ -50,10 +62,14 @@ function App(): JSX.Element {
       {text: 'Aceptar'},
     ]);
   };
+
+  const bgColorApp = {
+    backgroundColor: bgColor,
+  };
   return (
     <>
       <TouchableWithoutFeedback onPress={ocultarTeclado}>
-        <View style={styles.app}>
+        <View style={[styles.app, bgColorApp]}>
           <View style={styles.contenido}>
             <Clima resultado={resultado} />
             <Formulario
@@ -71,7 +87,6 @@ function App(): JSX.Element {
 const styles = StyleSheet.create({
   app: {
     flex: 1,
-    backgroundColor: 'rgb(71,149,212)',
     justifyContent: 'center',
   },
   contenido: {
