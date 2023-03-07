@@ -13,7 +13,7 @@ const Clima: FC<ClimaProps> = ({resultado}) => {
 
   const kelvin = 273.15;
   const value = resultado?.main.temp;
-  const temp = kelvin - value;
+  const temp = value - kelvin;
   const minTemp = resultado?.main.temp_min - kelvin;
   const maxTemp = resultado?.main.temp_max - kelvin;
 
