@@ -34,14 +34,14 @@ const Clima: FC<ClimaProps> = ({resultado}) => {
         <Text style={styles.texto}>
           Max{' '}
           <Text style={styles.temperatura}>
-            {parseInt(minTemp.toString())}&deg;C
+            {parseInt(maxTemp.toString())}&deg;C
           </Text>
         </Text>
 
         <Text style={styles.texto}>
           Min{' '}
           <Text style={styles.temperatura}>
-            {parseInt(maxTemp.toString())}&deg;C
+            {parseInt(minTemp.toString())}&deg;C
           </Text>
         </Text>
       </View>

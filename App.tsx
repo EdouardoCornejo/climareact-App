@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import {Formulario, Clima} from './components/';
 import {ClimaApi} from './components/types/climaTypes';
+import {OPENWEATHER_API_KEY} from '@env';
 
 function App(): JSX.Element {
   const [busqueda, setBusqueda] = useState<{
@@ -27,8 +28,7 @@ function App(): JSX.Element {
     const consultarClima = async () => {
       if (consultar) {
         try {
-          const appID = '***REMOVED***';
-          const url = `https://api.openweathermap.org/data/2.5/weather?q=${ciudad},${pais}&appid=${appID}`;
+          const url = `https://api.openweathermap.org/data/2.5/weather?q=${ciudad},${pais}&appid=${OPENWEATHER_API_KEY}`;
           const respuesta = await fetch(url);
           const resultado = await respuesta.json();
           setResultado(resultado);
@@ -36,7 +36,7 @@ function App(): JSX.Element {
 
           // modifica colores de fondo basado en la temperatura:
           const kelvin = 273.15;
-          const actual = resultado.data?.main.temp - kelvin;
+          const actual = resultado.main?.temp - kelvin;
 
           if (actual < 10) {
             setBgColor('rgb(105,108,149)');

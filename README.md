@@ -44,7 +44,7 @@ Aplicación móvil de **consulta del clima** hecha con **React Native** y **Type
 - **Icono del clima** cargado desde `openweathermap.org/img/w/<icono>.png`.
 - **Botón animado** con `Animated.spring`: se encoge al presionarlo y rebota al soltarlo.
 - **Ocultar el teclado** tocando en cualquier parte de la pantalla (`Keyboard.dismiss`).
-- **Color de fondo** pensado para cambiar según la temperatura (ver [Personalización](#personalización)).
+- **Color de fondo** que cambia según la temperatura actual (ver [Personalización](#personalización)).
 
 ---
 
@@ -65,11 +65,27 @@ yarn install
 
 ### API key de OpenWeatherMap
 
-La app no usa variables de entorno: la clave está escrita directamente en `App.tsx`, en la constante `appID`. Para usar tu propia clave, crea una cuenta en [openweathermap.org](https://openweathermap.org/api) y reemplaza el valor:
+La clave se lee de un archivo `.env` (ignorado por git) mediante el plugin de Babel [`react-native-dotenv`](https://github.com/goatandsheep/react-native-dotenv), que la inyecta en el bundle al compilar; no requiere enlazado nativo. Crea una cuenta en [openweathermap.org](https://openweathermap.org/api), copia el archivo de ejemplo y pon tu clave:
 
-```ts
-const appID = 'TU_API_KEY';
+```bash
+cp .env.example .env
 ```
+
+```env
+OPENWEATHER_API_KEY=tu_api_key
+```
+
+| Variable              | Descripción               |
+| --------------------- | ------------------------- |
+| `OPENWEATHER_API_KEY` | API key de OpenWeatherMap |
+
+En el código se importa desde el módulo virtual `@env` (`import {OPENWEATHER_API_KEY} from '@env'`), declarado para TypeScript en `types/env.d.ts`. Si cambias el `.env` con Metro ya en marcha, reinícialo limpiando la caché para que tome el nuevo valor:
+
+```bash
+yarn start --reset-cache
+```
+
+> La clave queda incluida en el bundle de la app, así que no es un secreto frente a quien inspeccione la app compilada; usa una clave de plan gratuito o restringida.
 
 ### Ejecutar en Android
 
@@ -114,7 +130,7 @@ yarn ios
 Componente raíz y dueño del estado:
 
 - `busqueda` (`{ ciudad, pais }`), `consultar` (bandera que dispara la petición), `resultado` (respuesta tipada como `ClimaApi`) y `bgColor`.
-- Un `useEffect` con la función `consultarClima` se ejecuta cuando cambia `consultar`; si es `true`, construye la URL `https://api.openweathermap.org/data/2.5/weather?q=${ciudad},${pais}&appid=${appID}`, guarda la respuesta en `resultado` y vuelve a poner `consultar` en `false`.
+- Un `useEffect` con la función `consultarClima` se ejecuta cuando cambia `consultar`; si es `true`, construye la URL `https://api.openweathermap.org/data/2.5/weather?q=${ciudad},${pais}&appid=${OPENWEATHER_API_KEY}`, guarda la respuesta en `resultado`, vuelve a poner `consultar` en `false` y ajusta `bgColor` según `main.temp` convertida a °C.
 - Si `fetch` lanza una excepción, `mostrarAlerta` muestra "No hay resultados, intenta con otra ciudad o pais.".
 - Envuelve la pantalla en `TouchableWithoutFeedback` con `ocultarTeclado` para cerrar el teclado.
 
@@ -162,6 +178,7 @@ App
 - **React Native 0.71.3** + **React 18.2.0** — UI nativa para Android e iOS.
 - **TypeScript 4.8.4** — tipado de props, estado y respuesta de la API.
 - **@react-native-community/picker** — selector de país.
+- **react-native-dotenv** — carga la API key desde `.env` en tiempo de compilación.
 - **Animated API** de React Native — animación del botón.
 - **OpenWeatherMap Current Weather API** — datos del clima.
 - **ESLint**, **Prettier** y **Jest** (`react-test-renderer`) — calidad y test básico.
@@ -192,7 +209,10 @@ climareact-App/
 │   └── App-test.tsx                # Test de render
 ├── android/                        # Proyecto nativo Android
 ├── ios/                            # Proyecto nativo iOS
-├── babel.config.js
+├── types/
+│   └── env.d.ts                    # Tipos del módulo @env (react-native-dotenv)
+├── .env.example                    # Plantilla de variables de entorno
+├── babel.config.js                 # Preset de RN + plugin react-native-dotenv
 ├── metro.config.js
 ├── tsconfig.json
 └── package.json
@@ -202,14 +222,12 @@ climareact-App/
 
 ## Personalización
 
-| Dónde                            | Qué                                | Valor actual                                                         |
-| -------------------------------- | ---------------------------------- | -------------------------------------------------------------------- |
-| `App.tsx` → `appID`              | API key de OpenWeatherMap          | Clave escrita en el código                                           |
-| `App.tsx` → `bgColor`            | Color de fondo inicial             | `rgb(71,149,212)`                                                    |
-| `App.tsx` → `consultarClima`     | Colores según temperatura          | `< 10 °C` → `rgb(105,108,149)`, `10–25 °C` → `rgb(178,28,61)`, resto → `rgb(71,149,212)` |
-| `components/data/PickerValue.ts` | Países disponibles en el selector  | 7 países (`US`, `MX`, `AR`, `CO`, `CR`, `ES`, `PE`)                  |
-
-> Notas sobre el código actual: el cálculo del color de fondo lee `resultado.data?.main.temp`, pero la respuesta de OpenWeatherMap no tiene la propiedad `data`, así que el fondo se queda en `rgb(71,149,212)`; para que funcione habría que usar `resultado.main.temp`. Además, en `Clima.tsx` las etiquetas "Max" y "Min" muestran los valores intercambiados (`temp_min` y `temp_max`).
+| Dónde                            | Qué                               | Valor actual                                                                             |
+| -------------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------- |
+| `.env` → `OPENWEATHER_API_KEY`   | API key de OpenWeatherMap         | Sin valor por defecto (ver `.env.example`)                                               |
+| `App.tsx` → `bgColor`            | Color de fondo inicial            | `rgb(71,149,212)`                                                                        |
+| `App.tsx` → `consultarClima`     | Colores según temperatura         | `< 10 °C` → `rgb(105,108,149)`, `10–25 °C` → `rgb(178,28,61)`, resto → `rgb(71,149,212)` |
+| `components/data/PickerValue.ts` | Países disponibles en el selector | 7 países (`US`, `MX`, `AR`, `CO`, `CR`, `ES`, `PE`)                                      |
 
 ---
 
